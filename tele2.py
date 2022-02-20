@@ -1,7 +1,10 @@
 import telebot
+from flask import Flask , request
+import os
 from telebot.types import InlineKeyboardMarkup , InlineKeyboardButton
-
 from pprint import pprint
+TOKEN ='5126798288:AAErHBKOZV7FvYP0cER2hXWUtcqO_IYMIZY'
+server = Flask(__name__)
 msg1 = 'يرجى كتابة معلوماتك الشخصية عزيزي الطالب: ( الاسم , العمر , اسم الدرس او الدروس اللتي تريد الاشتراك بها)'
 msg2 = 'تفضل بكتابة استفسارك عزيزي الزائر..'
 def markup_inline():
@@ -13,7 +16,7 @@ def markup_inline():
     )
     return markup
 
-bot = telebot.TeleBot('5126798288:AAErHBKOZV7FvYP0cER2hXWUtcqO_IYMIZY')
+bot = telebot.TeleBot(TOKEN)
 admin =5154442427
 group_id = -660744649
 
@@ -58,8 +61,20 @@ def forward_msg(msg):
         print(msgg)
         print(msg.text[0:msgg])
 
-bot.infinity_polling()
 
+@server.route('/'+TOKEN,methods=['POST'])
+def get_message():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode('utf-8'))])
+    return '!' , 200
+
+@server.route('/')
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url = ''+TOKEN)
+    return '!', 200
+
+if __name__=="__main__":
+    server.run(host='0.0.0.0' ,port= int(os.environ.get('PORT' , 5000)))
 
 
 
